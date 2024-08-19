@@ -31,7 +31,7 @@ def save_model(model: torch.nn.Module, target_dir: str,
     with open(model_safe_json, "w", encoding="utf-8") as json_file:
         json.dump({"hidden_units": hidden_units, "output_shape": output_shape}, json_file, indent=4)
 
-def load_model(model_path: str):
+def load_model(model_path: str) -> torch.nn.Module:
     """
     Loads a Pytorch model and make predictions given a image
     """
@@ -41,5 +41,5 @@ def load_model(model_path: str):
 
     model_path_pth = model_path + "/" + os.path.basename(model_path) + ".pth"
     model = model_builder.TinyVGG(3, data["hidden_units"], data["output_shape"])
-    model.load_state_dict(torch.load(model_path_pth))
+    model.load_state_dict(torch.load(model_path_pth, weights_only=True))
     return model

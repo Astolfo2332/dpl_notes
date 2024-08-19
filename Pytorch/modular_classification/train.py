@@ -17,7 +17,7 @@ def main():
     parser.add_argument("--num_epochs", type=int, default=50, help="Number of epochs for training")
     parser.add_argument("--hidden_units", type=int, default=10,
                          help="Number of neurons in the hidden layers")
-    parser.add_argument("--lr", type=float, default=0.01, help="Learning rate for the model")
+    parser.add_argument("--lr", type=float, default=0.001, help="Learning rate for the model")
     parser.add_argument("--train", type=str, required=True, help="Path to the train set")
     parser.add_argument("--test", type=str, required=True, help="Path to the test set")
     parser.add_argument("--out", type=str, required=True,
@@ -27,6 +27,8 @@ def main():
     print(f"Device selected: {device}")
     data_transform = transforms.Compose(
         [transforms.Resize((64, 64)),
+        transforms.RandomVerticalFlip(0.5),
+        transforms.TrivialAugmentWide(num_magnitude_bins=31),
         transforms.ToTensor()]
     )
     train_dataloader, test_dataloader, class_names = data_setup.create_dataloaders(
