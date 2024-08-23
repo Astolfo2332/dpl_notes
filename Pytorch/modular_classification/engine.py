@@ -5,8 +5,10 @@ from torch.utils.data import DataLoader
 from torch import nn
 from tqdm.auto import tqdm
 
+
 def train_func(model: nn.Module, data: DataLoader, loss_fn:nn.Module,
-               optimizer: torch.optim.Optimizer, device: torch.device) -> Tuple[float, float]:
+               optimizer: torch.optim.Optimizer, device: torch.device
+               , log_dir: str) -> Tuple[float, float]:
     """
     Trains a model for a single epoch
 
@@ -23,18 +25,28 @@ def train_func(model: nn.Module, data: DataLoader, loss_fn:nn.Module,
         A tuple with the loss and accuracy of the training epoch like
         (train_loss, train_acc)
     """
-    model.eval()
+    model.train()
     train_loss, train_acc = 0, 0
     for _ , (x, y) in enumerate(data):
-        x, y = x.to(device), y.to(device)
-        y_logit = model(x)
-        loss = loss_fn(y_logit, y)
-        train_loss += loss.item()
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        y_pred = torch.softmax(y_logit, 1).argmax(1)
-        train_acc += (y_pred == y).sum().item() / len (y_pred)
+        with torch.profiler.profile(
+    schedule=torch.profiler.schedule(
+        wait=1,
+        warmup=1,
+        active=1,
+        repeat=1),
+    on_trace_ready=torch.profiler.tensorboard_trace_handler("../" + log_dir),
+    with_stack=True
+        ) as profiler:
+            x, y = x.to(device), y.to(device)
+            y_logit = model(x)
+            loss = loss_fn(y_logit, y)
+            train_loss += loss.item()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            profiler.step()
+            y_pred = torch.softmax(y_logit, 1).argmax(1)
+            train_acc += (y_pred == y).sum().item() / len (y_pred)
         #We can use another function if we want
     train_loss = train_loss / len(data)
     train_acc = train_acc / len(data)
@@ -72,7 +84,8 @@ def test_func(model: nn.Module, data: DataLoader,
     return test_loss, test_acc
 
 def train(model: nn.Module, test_data: DataLoader, train_data: DataLoader, loss_fn:nn.Module,
-        optimizer: torch.optim.Optimizer, device: torch.device, epochs: int) -> Dict[str, List]:
+        optimizer: torch.optim.Optimizer, device: torch.device, epochs: int, log_dir: str
+        ) -> Dict[str, List]:
     """
     Trains and test a Pytorch model
 
@@ -102,7 +115,7 @@ def train(model: nn.Module, test_data: DataLoader, train_data: DataLoader, loss_
     }
     for epoch in tqdm(range(epochs)):
         train_loss, train_acc = train_func(
-            model,train_data,loss_fn,optimizer, device)
+            model,train_data,loss_fn,optimizer, device, log_dir)
         test_loss, test_acc = test_func(
             model, test_data, loss_fn, device)
         print(

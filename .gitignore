@@ -1,3 +1,5 @@
 /Pytorch/datasets
+/Pytorch/runs
+/Pytorch/log
 Pytorch/modular_classification/__pycache__
 .vscode
