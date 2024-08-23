@@ -1,9 +1,9 @@
 """Contains the utilities of the pipeline"""
 import os
 from pathlib import Path
+import json
 import torch
 import model_builder
-import json
 
 def save_model(model: torch.nn.Module, target_dir: str,
                model_name: str, hidden_units: int, output_shape: int):

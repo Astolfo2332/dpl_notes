@@ -27,8 +27,8 @@ def create_dataloaders(
     (train_dataloader, test_dataloader, class_names)
     """
     #Use ImageFolder to create the data sets
-    train_data = datasets.ImageFolder(test_dir, transform=transform)
-    test_data = datasets.ImageFolder(train_dir, transform=transform)
+    train_data = datasets.ImageFolder(train_dir, transform=transform)
+    test_data = datasets.ImageFolder(test_dir, transform=transform)
     #Extract the class_names
     class_names = train_data.classes
     #Turn the ImageFolder in DataLoader
